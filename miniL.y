@@ -19,11 +19,18 @@
 %start prog_start
 %token FUNCTION SEMICOLON BEGIN_PARAMS END_PARAMS BEGIN_LOCALS END_LOCALS BEGIN_BODY END_BODY COMMA COLON INTEGER ARRAY L_SQUARE_BRACKET R_SQUARE_BRACKET OF ENUM ASSIGN IF THEN ELSE ENDIF FOR WHILE BEGINLOOP ENDLOOP DO READ WRITE CONTINUE OR AND NOT TRUE FALSE EQ NEQ LT GT LTE GTE ADD SUB MULT DIV MOD L_PAREN R_PAREN END RETURN
 %token <dval> NUMBER
-%token <str> id IDENT
-%type <str> functions function declarations statements var expression bool_exp relation_and_exp relation_exp comp multiplicative_expression term declaration statement identifiers vars expressions ident
-%left PLUS MINUS
-%left MULT DIV
-%nonassoc UMINUS
+%token <str> IDENT
+%type <str> functions function declarations declaration statements statement vars var expressions expression bool_exp relation_and_exp relation_exp comp multiplicative_expression term identifiers ident
+%right ASSIGN
+%left OR
+%left AND
+%right NOT
+%left LT LTE GT GTE EQ NEQ
+%left ADD SUB
+%left MULT DIV MOD
+%right UMINUS
+%left L_SQUARE_BRACKET R_SQUARE_BRACKET
+%left L_PAREN R_PAREN
 
 /* %start program */
 
@@ -104,7 +111,8 @@ comp:
 
 expressions:
     {printf("expressions -> epsilon\n");} | 
-    expression COMMA expressions  {printf("expressions -> expression COMMA expressions\n");}
+    expression                      {printf("expressions -> expression\n");} |
+    expression COMMA expressions    {printf("expressions -> expression COMMA expressions\n");}
     ;
 
 expression:
@@ -136,16 +144,18 @@ vars:
   ;
 
 var:
-  ident                                                {printf("var -> ident\n");} |
-  ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET  {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
+  ident                                                 {printf("var -> ident\n");} |
+  ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET    {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
   ;
 
 identifiers:
   ident                     {printf("identifiers -> ident\n");} |
   ident COMMA identifiers   {printf("identifiers -> ident COMMA identifiers\n");}
+  ;
 
 ident:
   IDENT { printf("ident -> IDENT %s\n", $1);}
+  ;
 %% 
 
 int main(int argc, char **argv)
