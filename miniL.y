@@ -17,10 +17,13 @@
 
 %error-verbose
 %start prog_start
-%token FUNCTION SEMICOLON BEGIN_PARAMS END_PARAMS BEGIN_LOCALS END_LOCALS BEGIN_BODY END_BODY COMMA COLON INTEGER ARRAY L_SQUARE_BRACKET R_SQUARE_BRACKET OF ENUM ASSIGN IF THEN ELSE ENDIF FOR WHILE BEGINLOOP ENDLOOP DO READ WRITE CONTINUE OR AND NOT TRUE FALSE EQ NEQ LT GT LTE GTE ADD SUB MULT DIV MOD L_PAREN R_PAREN END RETURN
+%token FUNCTION "function" SEMICOLON ";" BEGIN_PARAMS "beginparams" END_PARAMS "endparams" BEGIN_LOCALS "beginlocals" END_LOCALS "endlocals" BEGIN_BODY "beginbody" END_BODY "endbody"
+%token COMMA ","  COLON ":" INTEGER "integer" ARRAY "array" L_SQUARE_BRACKET "[" R_SQUARE_BRACKET "]" OF "of" ENUM "enum" ASSIGN ":=" 
+%token IF "if" THEN "then" ELSE "else" ENDIF "endif" FOR "for" WHILE "while" BEGINLOOP "beginloop" ENDLOOP "endloop" DO "do" READ "read" WRITE "write" CONTINUE "continue"
+%token OR "or" AND "and" NOT "not" TRUE "true" FALSE "false" EQ "==" NEQ "<>" LT "<" GT ">" LTE "<=" GTE ">=" ADD "+" SUB "-" MULT "*" DIV "/" MOD "%" L_PAREN "(" R_PAREN ")" RETURN "return" ERROR "symbol" EQSIGN "="
 %token <dval> NUMBER
 %token <str> IDENT
-%type <str> functions function declarations declaration statements statement vars var expressions expression bool_exp relation_and_exp relation_exp comp multiplicative_expression term identifiers ident
+%type functions function declarations declaration statements statement vars var expressions expression bool_exp relation_and_exp relation_exp comp multiplicative_expression term identifiers ident
 %right ASSIGN
 %left OR
 %left AND
@@ -77,6 +80,7 @@ statement:
   WRITE vars                                          {printf("statement -> WRITE vars\n");} |
   CONTINUE                                            {printf("statement -> CONTINUE\n");}  |
   RETURN expression                                   {printf("statement -> RETURN expression\n");}
+  | error '\n'
   ;
 
 bool_exp:
@@ -96,7 +100,7 @@ relation_exp:
   L_PAREN bool_exp R_PAREN        {printf("relation_exp -> L_PAREN bool_exp R_PAREN\n");}  |
   NOT expression comp expression  {printf("relation_exp -> NOT expression comp expression\n");} |
   NOT TRUE                        {printf("relation_exp -> NOT TRUE\n");} |
-  NOT FALSE                       {printf("relation_exp -> NOT FALSE\n");}
+  NOT FALSE                       {printf("relation_exp -> NOT FALSE\n");} |
   NOT L_PAREN bool_exp R_PAREN    {printf("relation_exp -> NOT L_PAREN bool_exp R_PAREN\n");}
   ;
 
@@ -130,12 +134,12 @@ multiplicative_expression:
 
 term:
   ident L_PAREN expressions R_PAREN   {printf("term -> ident L_PAREN expressions R_PAREN\n");} |
-  var                                 {printf("term -> var\n");} |
+  var                                 {printf("term -> var\n");}    |
   NUMBER                              {printf("term -> NUMBER\n");} |
   L_PAREN expression R_PAREN          {printf("term -> L_PAREN expression R_PAREN\n");} |
-  UMINUS var                          {printf("term -> UMINUS var\n");} |
-  UMINUS NUMBER                       {printf("term -> UMINUS NUMBER\n");} |
-  UMINUS L_PAREN expression R_PAREN   {printf("term -> UMINUS L_PAREN expression R_PAREN\n");}
+  SUB var                          {printf("term -> UMINUS var\n");} %prec UMINUS       |
+  SUB NUMBER                       {printf("term -> UMINUS NUMBER\n");} %prec UMINUS    |
+  SUB L_PAREN expression R_PAREN   {printf("term -> UMINUS L_PAREN expression R_PAREN\n");} %prec UMINUS
   ;
 
 vars:
@@ -156,6 +160,7 @@ identifiers:
 ident:
   IDENT { printf("ident -> IDENT %s\n", $1);}
   ;
+
 %% 
 
 int main(int argc, char **argv)
@@ -173,5 +178,19 @@ int main(int argc, char **argv)
 }
 
 void yyerror(const char *msg) {
-    printf("** Line %d, position %d: %s\n", currLine, currPos, msg);
+  int flag = 0;
+  const char* c = msg;
+  while(*c) {
+    if(*c++ == ':') {
+      if(*c == 0) { //colon is the last character
+        flag = 1;
+        break;
+      }
+    }
+  }
+  if(flag) {
+    printf("** Line %d, position %d: invalid declaration\n", currLine, currPos);
+    return;
+  }
+  printf("** Line %d, position %d: %s\n", currLine, currPos, msg);
 }
