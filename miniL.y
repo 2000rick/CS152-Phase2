@@ -41,7 +41,8 @@
 
   /* write your rules here */
 prog_start:
-  functions   {printf("prog_start -> functions\n");}
+  functions   {printf("prog_start -> functions\n");} |
+  error '\n'  {yyerrok; yyclearin;}
   ;
 
 functions:
@@ -80,7 +81,6 @@ statement:
   WRITE vars                                          {printf("statement -> WRITE vars\n");} |
   CONTINUE                                            {printf("statement -> CONTINUE\n");}  |
   RETURN expression                                   {printf("statement -> RETURN expression\n");}
-  | error '\n'
   ;
 
 bool_exp:
