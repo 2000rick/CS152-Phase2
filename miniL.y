@@ -63,7 +63,7 @@ declarations:
 declaration:
   identifiers COLON INTEGER                                                     {printf("declaration -> identifiers COLON INTEGER\n");} |
   identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");} |
-  identifiers COLON ENUM L_PAREN identifiers R_PAREN                            {printf("identifiers COLON ENUM L_PAREN identifiers R_PAREN\n");}
+  identifiers COLON ENUM L_PAREN identifiers R_PAREN                            {printf("declaration -> identifiers COLON ENUM L_PAREN identifiers R_PAREN\n");}
   ;
 
 statements:
